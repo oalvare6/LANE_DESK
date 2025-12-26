@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loadboard Helper</title>
+  <link rel="stylesheet" href="style.css">
+  <style>body{background:#0f172a;color:#e2e8f0;font-family:Inter,system-ui;padding:12px;width:360px;} h1{font-size:18px;margin:0 0 8px;}</style>
+</head>
+<body>
+  <h1>Loadboard Helper</h1>
+  <div id="status" class="lh-badge">Loading...</div>
+  <div class="lh-panel" style="margin-top:10px;">
+    <div class="lh-space-between">
+      <h3>Recent loads</h3>
+      <a class="lh-button" href="options.html" target="_blank">Options</a>
+    </div>
+    <ul id="load-list" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;"></ul>
+  </div>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

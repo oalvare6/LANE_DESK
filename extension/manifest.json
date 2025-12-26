@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Loadboard Helper",
+  "description": "SmartBoard tools for DAT and Truckstop load boards with filters, email templates, notifications, and mapping.",
+  "version": "1.0.0",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage", "notifications", "activeTab"],
+  "host_permissions": [
+    "https://*.truckstop.com/*",
+    "https://*.dat.com/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.truckstop.com/*", "https://*.dat.com/*"],
+      "js": ["content.js"],
+      "css": ["style.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "options.html"
+}
