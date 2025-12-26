@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+// Utility script to generate extension icons without storing binary assets in git.
+// The PNG payloads were procedurally generated and are encoded below in base64.
+const fs = require('fs');
+const path = require('path');
+
+const ICONS = {
+  16: 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnUlEQVR4nKXSMQrCQBSE4Wk3m43nEAyIoIUWsUiTQgstFEQQCYgggk2u5yU8gecQRrSaRnzwiq/7mWrQ6670QHE70wPFpaUH0ulAD6Tjjqp83P/SHmm/ofoEzxd/+g5Ij3y7orIMaI98vaAyDUiPuGyoLAPaIzY1lWlAesR6TmUakB5ZNaOyDGiPbDqhsvxAe4TxiB4Iw5IeCIM+Pd5eVDdoAIaVfQAAAABJRU5ErkJggg==',
+  32: 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABAElEQVR4nMXVW0oCYBiE4bn9j60jyg6UFlKISCF2IrNCChFBpANCBG2vTbSC1hFM1AaG+i6+i+f2Ze4GK29LekJ9faIn1JcHekJdLugJ9XlOT6iPM3pCWUzpCWU+oSeU2T09oUzHVBof7/+m2iiTWyo/oc8v/tnvANFGvrumYhmg2sjjKyqmAaKNfHNJxTRAtJFH51RMA0QbeXhKxTRAtJEuBlQsA1Qb6axPxTRAtJFOjqiYBog2Ur9HxTRAtJGOu1RMA0QbsdehYhmg2ojdQyqmAaKN2GlTsbyhaiMe7NMTYrtFTwh7u/SE0NymJ4SdTXpC2GrQE8LGGj0hrK/S0zduHU4TzY3DagAAAABJRU5ErkJggg==',
+  48: 'iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABaklEQVR4nNXX2zLCARTF4XX7P3oOh4iQU0REjhERESKiyTDG63kJT+A5zCzDI6xpX+yL73r/1uXG0EefniF979EzpG/P9Azpa5eeIX15pGdI+x16hrR3T8+QPrXpGZLuLT1D8nBNz5B0WvQMyd0lPUPSbtIzJDfn9AxJq0FF5utz4JQOJFenVPwd/P7hwPwPEDoQN+tUWAxQOhBfnFBhMkDoQNyoUWEyQOhAfHZEhckAoQNxvUqFyQChA/HxARUmA4QOxLU9KkwGCB2ID3epMBkgdCCqblNhMUDpQLRfocJkgNCBaG+TCpMBQgeinTIVJgOEDkSVdSpMBggdiLZKVJgMEDoQlVepMBkgdCDaKFJhMkDoQFhaocJigNKBcK1AhckAoQNhcYkKi59Y6UC4vEDPEBbm6RnCxTw9Q7gwS88Qzk3TMwT5HD1DMDNJzxDksvQMwdQ4PUOQzdAzBBOj9AxBZoSeIRgbpme/+E9QShjOdhoAAAAASUVORK5CYII=',
+  128: 'iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAADhUlEQVR4nO3dRa4lVxCE4ZxW3VvV67DdzMzMzMxs9va8Ca/A67AUTsuz1Bt3hTJi8B3lOPTPT2z64ytMV8y/f4Hpivm3zzBdDkBczL9+gulyAOJi/uUjTFfMP+dhsjKADzBdMf+Uh8nKAN7DdMX8Yx4mKwN4B9MV89e3MF0xf8nDZGUAb2C6Yv6ch8nKAF7DdMX8KQ+TFfPHVzBdDkBczB9ewnTFlI/piun9C5iuDOA5TFdM7/IwWTG9fQbT5QDExfTmKUyXAxAX0+snMF0xvcrDZGUAj2G6YnqZh8nKAB7BdMX04iFMlwMQF9PzBzBdMT3Lg9CWv/5sZ+lNN5IB3Aej/wb7+x+08X8Ay+9axfQ0D0ItAyDYtcoA7oFRzwCW37WK6UkehFoGQLBrFevHd8GoYwBLb7oRByAfwKM7YNQyAIJdKwcgH8DD22DUMgCCXasM4BYY9Qxg+V2rWD/Ig1DLAAh2rWJ9/yYYtQyAYNfKAcgHcO8GGLUMgGDXygHIB3D3Ohi1DIBg1yrWd/Ig1DIAgl2rDOAaGPUMYPldq1jfzoNQywAIdq0ygKtg1DOA5XetYn3rChi1DIBg18oByAdw8zIYtQyAYNcq1jfyINQyAIJdqwzgEhj1DGD5XatYXb8ERh0DWHrTjWQAF8GoZwDL71rF6loehFoGQLBrFaurF8CoZQAEu1YOQD6AK+fBqGUABLtWGcA5MOoZwPK7VrG6nAehlgEQ7FplAGfBqGcAy+9axepSHoRaBkCwaxWri2fAqGUABLtWDkA+gAunwahlAAS7Vg5APoDzp8CoZQAEu1axOpcHoZYBEOxaZQAnwahnAMvvWsXq7AkwahkAwa6VA5AP4MxxMGoZAMGulQNQD2A8fQyMOgaw9KYbifFUHoRaBkCwa5UBHAWjngEsv2sV48k8CLUMgGDXKgM4AkY9A1h+1yrGE3kQ+lb/+HxLS2+6kRiPH4bpcgDiYjx2CKYrAzgI0xXj0TxMVgZwAKYrxiN5mKwYD++H6XIA4mI8tA+mywGIi/HgXpiuGA/kYbIygD0wXTHu3w3TFUM+piuGfbtguhyAuBj27oTpimFPHiYrA9gB0xXD7jxMVgawHaYrhl15mKwYdm6D6coAtsJ0xbAjD5OVAWyB6Yphex4mKwPYDNMVw7Y8TFYMW3+A6XIA4mLY8j1MlwMQF8Pm72C6HIC4fwFmMepiCb6fKQAAAABJRU5ErkJggg=='
+};
+
+const root = path.resolve(__dirname, '..');
+const iconsDir = path.join(root, 'extension', 'icons');
+fs.mkdirSync(iconsDir, { recursive: true });
+
+Object.entries(ICONS).forEach(([size, data]) => {
+  const filepath = path.join(iconsDir, `icon${size}.png`);
+  fs.writeFileSync(filepath, Buffer.from(data, 'base64'));
+  console.log(`Generated ${filepath}`);
+});
+
+console.log('Icon generation complete. Reload the extension to pick up the new assets.');
